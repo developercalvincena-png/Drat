@@ -21,7 +21,48 @@ import {
   syncStudentsOnline,
   type SupabaseHealth,
 } from './lib/supabase';
-import { SUPABASE_CLIENT_BOILERPLATE, SUPABASE_AUTH_BOILERPLATE } from './lib/supabaseBoilerplate';
+
+export const SUPABASE_CLIENT_BOILERPLATE = `import { createClient } from '@supabase/supabase-js';
+
+// 1. Read configuration from environment variables or custom config
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://YOUR_PROJECT_ID.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR_ANON_PUBLIC_KEY';
+
+// 2. Network Timeout & Latency Resilience Wrapper
+const TIMEOUT_MS = 10000; // 10s connection timeout
+
+const fetchWithTimeout = async (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+  try {
+    const response = await fetch(input, {
+      ...init,
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error: any) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      throw new Error('Supabase network connection timeout (latency limit exceeded).');
+    }
+    throw error;
+  }
+};
+
+// 3. Create the Supabase Client with full Auth and Realtime capabilities
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
+  global: {
+    fetch: fetchWithTimeout,
+  },
+});
+`;
 
 interface ScholarGrade {
   id: string;
