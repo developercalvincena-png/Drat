@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Supabase Status Badge: Strictly hidden on landing page and public views, only visible when admin portal is active */
+#stanbax-supabase-status-badge {
+  display: none;
+}
+
+body:has([data-portal="admin"]) #stanbax-supabase-status-badge,
+body.stanbax-admin-active #stanbax-supabase-status-badge {
+  display: flex !important;
+}
