@@ -11,6 +11,7 @@
  * 5. Interactive Supabase Cloud Setup & Boilerplate Modal.
  */
 
+import './index.css';
 import {
   getSupabaseConfig,
   saveSupabaseConfig,
